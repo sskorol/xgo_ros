@@ -1,0 +1,11 @@
+xgo:
+  ros__parameters:
+    xgo_type: xgomini
+    vx_max: 0.3
+    vy_max: 0.2
+    vyaw_max: 1.2
+    period_limit: [1.5, 8]
+    joint_limit: "[[-73, 57], [-66, 93], [-31, 31], [-65, 65], [-50, 85], [-90, 75]]"
+    body_limit: "[[35, -35], [18, -18], [75, 115], [-20, 20], [-15, 15], [-11, 11]]"
+    arm_limit: "[[0, 100], [-80, 155], [-95, 155]]"
+    period_limit: "[1.5, 8]"
