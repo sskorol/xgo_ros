@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="com_port" default="/dev/ttyS0"/>
+  <arg name="is_xgomini" default="true" />
+  <arg name="use_lidar" default="true" />
+  <arg name="enable_joint_gui" default="false"/>
+  <arg name="auto_balance" default="false"/>
+  <param name="com_port" value="$(arg com_port)"/>
+  <param name="enable_joint_gui" value="$(arg enable_joint_gui)"/>
+  <rosparam if="$(arg is_xgomini)" command="load" file="$(find xgo_ros)/config/xgomini.yaml" />
+  <rosparam unless="$(arg is_xgomini)" command="load" file="$(find xgo_ros)/config/xgolite.yaml" />
+  <node name="xgo_ros_node" pkg="xgo_ros" type="xgo_ros_node" respawn="true" output="screen"> 	
+  </node>
+  <include file="$(find mini2_description)/launch/display.launch" />
+  <group if="$(arg use_lidar)">
+    <!-- <include file="$(find ldlidar_ros)/launch/ld06.launch" /> -->
+    <node name="ld06_lidar" pkg="ld06_lidar" type="ld06_lidar" args="LD06" output="screen" >
+      <param name="serial_port" value="/dev/ttyUSB0"/>
+      <param name="lidar_frame" value="lidar_link"/>
+      <remap from="/LiDAR/LD06" to="scan"/>
+    </node>
+  </group>
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
+    <rosparam command="load" file="$(find xgo_ros)/config/ekf.yaml" />
+  </node>
+  <!-- <node pkg="tf" type="static_transform_publisher" name="world_to_odom_broadcaster" args="0 0 0.1 0 0 0 world odom 100" /> -->
+</launch>
