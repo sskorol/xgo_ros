@@ -1,4 +1,4 @@
-xgo:
+xgo_ros:
   ros__parameters:
     xgo_type: xgomini
     vx_max: 0.3

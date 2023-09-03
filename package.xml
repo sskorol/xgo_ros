@@ -16,6 +16,9 @@
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>libjsoncpp-dev</depend>
+  <!-- <depend>libcxx-serial-dev</depend> -->
 
   <exec_depend>launch_ros</exec_depend>
 

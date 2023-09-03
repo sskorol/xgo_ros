@@ -6,14 +6,28 @@
   name="mini2_description">
 <!-- Used for fixing robot to Gazebo 'body_link' -->
   <link name="world"/>
+  <link name="odom"/>
 
-  <joint name="world_fixed" type="fixed">
+  <joint name="world_to_odom" type="fixed">
+    <origin
+      xyz="0 0 0.1"
+      rpy="0 0 0" />
+    <parent link="world"/>
+    <child link="odom"/>
+  </joint>
+
+  <joint name="odom_to_base_link" type="fixed">
+    <parent link="odom"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!-- <joint name="world_fixed" type="fixed">
     <origin
       xyz="0 0 0.1"
       rpy="0 0 0" />
     <parent link="world"/>
     <child link="base_link"/>
-  </joint>
+  </joint> -->
 
   <link
     name="base_link">
@@ -55,17 +69,6 @@
       </geometry>
     </collision>
   </link>
-  <link name="imu_link">
-    <inertial>
-      <mass value="0.001"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="1e-09" ixy="0.0" ixz="0.0" iyy="1e-09" iyz="0.0" izz="1e-09"/>
-    </inertial>
-  </link>
-  <joint name="imu_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="imu_link"/>
-  </joint>
   <link
     name="13_Link">
     <inertial>
@@ -224,6 +227,59 @@
       link="11_Link" />
     <axis
       xyz="0 0  1" />
+  </joint>
+  <link
+    name="10_Link">
+    <inertial>
+      <origin
+        xyz="0.000424477269554246 -1.81550998540336E-09 0.000743181675761886"
+        rpy="0 0 0" />
+      <mass
+        value="0.0625" />
+      <inertia
+        ixx="3.88852646564769E-08"
+        ixy="3.60583012427767E-14"
+        ixz="-2.99983098577409E-09"
+        iyy="5.81684749230997E-08"
+        iyz="1.31966996419541E-14"
+        izz="2.7893076025217E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mini2_description/meshes/lffoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.2 0.2 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mini2_description/meshes/lffoot.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="10_Joint"
+    type="fixed">
+    <origin
+      xyz="0.001 -0.0759880541805861 0"
+      rpy="-1.57079632679488 0 0" />
+    <parent
+      link="11_Link" />
+    <child
+      link="10_Link" />
+    <axis
+      xyz="0 0 0" />
   </joint>
   <link
     name="23_Link">
@@ -385,6 +441,59 @@
       xyz="0 0  1" />
   </joint>
   <link
+    name="20_Link">
+    <inertial>
+      <origin
+        xyz="0.000424477269554566 4.99981844905087E-05 0.000743181675762233"
+        rpy="0 0 0" />
+      <mass
+        value="0.0625" />
+      <inertia
+        ixx="3.88852646564774E-08"
+        ixy="3.60583012797131E-14"
+        ixz="-2.99983098577438E-09"
+        iyy="5.81684749231005E-08"
+        iyz="1.31966996988911E-14"
+        izz="2.78930760252171E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mini2_description/meshes/rffoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.2 0.2 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mini2_description/meshes/rffoot.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="20_Joint"
+    type="fixed">
+    <origin
+      xyz="0.001 -0.0759880541805861 0"
+      rpy="-1.57079632679488 0 0" />
+    <parent
+      link="21_Link" />
+    <child
+      link="20_Link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
     name="33_Link">
     <inertial>
       <origin
@@ -542,6 +651,34 @@
       link="31_Link" />
     <axis
       xyz="0 0  1" />
+  </joint>
+  <link name="30_Link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000424477269553421 4.99981844908973E-05 0.000743181675762136"/>
+      <mass value="0.0625"/>
+      <inertia ixx="3.88852646564768E-08" ixy="3.60583012702203E-14" ixz="-2.99983098577417E-09" iyy="5.81684749230997E-08" iyz="1.31966997511807E-14" izz="2.78930760252171E-08"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://mini_pupper_description/meshes/rbfoot.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://mini_pupper_description/meshes/rbfoot.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="30_Joint" type="fixed">
+    <origin rpy="-1.57079632679488 0 0" xyz="0.001 -0.0759880541805861 0"/>
+    <parent link="31_Link"/>
+    <child link="30_Link"/>
+    <axis xyz="0 0 0"/>
   </joint>
   <link
     name="43_Link">
@@ -701,6 +838,34 @@
       link="41_Link" />
     <axis
       xyz="0 0  1" />
+  </joint>
+  <link name="40_Link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000424477269554052 -5.00018155106391E-05 0.000743181675762469"/>
+      <mass value="0.0625"/>
+      <inertia ixx="3.8885264656477E-08" ixy="3.60583012801976E-14" ixz="-2.99983098577426E-09" iyy="5.81684749230999E-08" iyz="1.31966997327651E-14" izz="2.7893076025217E-08"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://mini2_description/meshes/lbfoot.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://mini2_description/meshes/lbfoot.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="40_Joint" type="fixed">
+    <origin rpy="-1.57079632679488 0 0" xyz="0.001 -0.0759880541805861 0" />
+    <parent link="41_Link"/>
+    <child link="40_Link"/>
+    <axis xyz="0 0 0"/>
   </joint>
   <link
     name="53_Link">
@@ -984,5 +1149,44 @@
       joint="51_Joint"
       multiplier="-0.072"
       offset="0" />
+  </joint>
+  <link name="lidar_link">
+    <inertial>
+      <origin rpy="0 0 1.5708" xyz="1.56706411611127E-05 -5.16565672073303E-13 -0.0191835739440227"/>
+      <mass value="0.27"/>
+      <inertia ixx="8.74731426973985E-06" ixy="-6.66781590704156E-08" ixz="1.89196685410159E-11" iyy="8.70097486591694E-06" iyz="-1.13397577799603E-17" izz="9.98821295317784E-06"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 1.5708" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://mini2_description/meshes/lidar.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 1.5708" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://mini2_description/meshes/lidar.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="lidar_joint" type="fixed">
+    <origin rpy="0 0 -1.5708" xyz="-0.070475 0.0001 0.055"/>
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1e-09" ixy="0.0" ixz="0.0" iyy="1e-09" iyz="0.0" izz="1e-09"/>
+    </inertial>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
   </joint>
 </robot>

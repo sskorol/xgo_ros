@@ -1,13 +1,9 @@
 #include "xgo2_ros/xgo.hpp"
-#include <errno.h>
-#include <fcntl.h>
-#include <iostream>
-#include <json/json.h>
-#include <rclcpp/rclcpp.hpp>
-#include <stdio.h>
-#include <termios.h>
-#include <time.h>
-#include <unistd.h>
+
+using namespace geometry_msgs;
+using namespace sensor_msgs;
+using namespace std_msgs;
+using namespace tf2;
 
 float limit(float data, float min_limit, float max_limit) {
   return data < min_limit ? min_limit : data > max_limit ? max_limit : data;
@@ -41,7 +37,7 @@ XGO::XGO() : Node("xgo_control_node") {
 
   period_limit = {1.5f, 8.0f};
   enable_joint_gui = false;
-  com_port_str = "/dev/ttyS0";
+  com_port_str = "/dev/ttyAMA0";
 
   // initParameters();
   initCOM();
@@ -49,28 +45,28 @@ XGO::XGO() : Node("xgo_control_node") {
   initPublisher();
 }
 
-void XGO::initParameters() {
-  this->declare_parameter("com_port_str");
-  this->declare_parameter("vx_max");
-  this->declare_parameter("vy_max");
-  this->declare_parameter("vyaw_max");
-  this->declare_parameter("enable_joint_gui");
-  this->declare_parameter<std::string>("joint_limit", "[]");
-  this->declare_parameter<std::string>("arm_limit", "[]");
-  this->declare_parameter<std::string>("body_limit", "[]");
-  this->declare_parameter<std::string>("period_limit", "[]");
+// void XGO::initParameters() {
+//   this->declare_parameter("com_port_str");
+//   this->declare_parameter("vx_max");
+//   this->declare_parameter("vy_max");
+//   this->declare_parameter("vyaw_max");
+//   this->declare_parameter("enable_joint_gui");
+//   this->declare_parameter<std::string>("joint_limit", "[]");
+//   this->declare_parameter<std::string>("arm_limit", "[]");
+//   this->declare_parameter<std::string>("body_limit", "[]");
+//   this->declare_parameter<std::string>("period_limit", "[]");
 
-  this->get_parameter("com_port_str", com_port_str);
-  this->get_parameter("vx_max", vx_max);
-  this->get_parameter("vy_max", vy_max);
-  this->get_parameter("vyaw_max", vyaw_max);
-  this->get_parameter("enable_joint_gui", enable_joint_gui);
+//   this->get_parameter("com_port_str", com_port_str);
+//   this->get_parameter("vx_max", vx_max);
+//   this->get_parameter("vy_max", vy_max);
+//   this->get_parameter("vyaw_max", vyaw_max);
+//   this->get_parameter("enable_joint_gui", enable_joint_gui);
 
-  parseStringParameter("joint_limit", joint_limit);
-  parseStringParameter("arm_limit", arm_limit);
-  parseStringParameter("body_limit", body_limit);
-  parsePeriodLimitString("period_limit", period_limit);
-}
+//   parseStringParameter("joint_limit", joint_limit);
+//   parseStringParameter("arm_limit", arm_limit);
+//   parseStringParameter("body_limit", body_limit);
+//   parsePeriodLimitString("period_limit", period_limit);
+// }
 
 bool XGO::initCOM() {
   std::cout << "Connecting to " << com_port_str << std::endl;
@@ -88,10 +84,10 @@ void XGO::initSubscriber() {
   sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10,
       std::bind(&XGO::cmdvelCallback, this, std::placeholders::_1));
-  sub_body_pose_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+  sub_body_pose_ = this->create_subscription<geometry_msgs::msg::Pose>(
       "body_pose", 10,
       std::bind(&XGO::bodyposeCallback, this, std::placeholders::_1));
-  sub_arm_pose_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+  sub_arm_pose_ = this->create_subscription<geometry_msgs::msg::Pose>(
       "arm_pose", 10,
       std::bind(&XGO::armposeCallback, this, std::placeholders::_1));
   sub_joint_angle_ =
@@ -115,6 +111,8 @@ void XGO::initPublisher() {
   vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
   battery_pub_ =
       this->create_publisher<sensor_msgs::msg::BatteryState>("/battery", 10);
+  odom_pub_ =
+      this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 }
 
 void XGO::readState() {
@@ -183,6 +181,8 @@ void XGO::updateState() {
   pubJointState();
   pubBaseTf();
   pubBattery();
+  pubImuState();
+  publishOdometry();
 }
 
 void XGO::cmdvelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
@@ -200,12 +200,24 @@ void XGO::jointangleCallback(
   }
 }
 
-void XGO::bodyposeCallback(
-    const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
-  for (int i = 0; i < 6; i++) {
-    body_pose[i] = msg->data[i];
-    sendBodyPose();
-  }
+// void XGO::bodyposeCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
+//   for (int i = 0; i < 6; i++) {
+//     body_pose[i] = msg->data[i];
+//     sendBodyPose();
+//   }
+// }
+
+void XGO::bodyposeCallback(const geometry_msgs::msg::Pose::SharedPtr msg) {
+  // x y z roll pitch yaw
+  geometry_msgs::msg::Point p = msg->position;
+  geometry_msgs::msg::Quaternion q = msg->orientation;
+  body_pose[0] += p.x;
+  body_pose[1] += p.y;
+  body_pose[2] += p.z;
+  body_pose[3] += q.x;
+  body_pose[4] += q.y;
+  body_pose[5] += q.z;
+  sendBodyPose();
 }
 
 void XGO::legposeCallback(
@@ -216,12 +228,20 @@ void XGO::legposeCallback(
   }
 }
 
-void XGO::armposeCallback(
-    const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
-  for (int i = 0; i < 3; i++) {
-    arm_pose[i] = msg->data[i];
-    sendArmPose();
-  }
+// void XGO::armposeCallback(const geometry_msgs::msg::Pose::SharedPtr msg) {
+//   for (int i = 0; i < 3; i++) {
+//     arm_pose[i] = msg->data[i];
+//     sendArmPose();
+//   }
+// }
+
+void XGO::armposeCallback(const geometry_msgs::msg::Pose::SharedPtr msg) {
+  // forward/backward, up/down, left/right
+  geometry_msgs::msg::Point p = msg->position;
+  arm_pose[0] = limit(arm_pose[0] + p.x, arm_limit[0][0], arm_limit[0][1]);
+  arm_pose[1] = limit(arm_pose[1] + p.y, arm_limit[1][0], arm_limit[1][1]);
+  arm_pose[2] = limit(arm_pose[2] + p.z, arm_limit[2][0], arm_limit[2][1]);
+  sendArmPose();
 }
 
 void XGO::sendOrder(uint8_t addr, uint8_t data) {
@@ -334,34 +354,45 @@ void XGO::pubJointState() {
 
 void XGO::pubImuState() {
   sensor_msgs::msg::Imu imuState;
+  
   imuState.header.stamp = rclcpp::Clock().now();
   imuState.header.frame_id = "imu_link";
+  
   tf2::Quaternion q;
   q.setRPY(imu_angle[0], imu_angle[1], imu_angle[2]); // roll, pitch, yaw
+  q.normalize();
+  
   imuState.orientation.x = q.x();
   imuState.orientation.y = q.y();
   imuState.orientation.z = q.z();
   imuState.orientation.w = q.w();
+
   imuState.linear_acceleration.x = imu_acc[0];
   imuState.linear_acceleration.y = imu_acc[1];
   imuState.linear_acceleration.z = imu_acc[2];
+
   pub_imu_->publish(imuState);
 }
 
 void XGO::pubBaseTf() {
-  geometry_msgs::msg::TransformStamped ts;
-  ts.header.stamp = this->get_clock()->now();
-  ts.header.frame_id = "world";
-  ts.child_frame_id = "base_link";
-  ts.transform.translation.x = 0.0;
-  ts.transform.translation.y = 0.0;
-  ts.transform.translation.z = 0.12;
   tf2::Quaternion q;
   q.setRPY(imu_angle[0], imu_angle[1], imu_angle[2]);
+
+  geometry_msgs::msg::TransformStamped ts;
+  
+  ts.header.stamp = this->get_clock()->now();
+  ts.header.frame_id = "odom";
+  ts.child_frame_id = "base_link";
+
+  ts.transform.translation.x = odom.pose.pose.position.x;
+  ts.transform.translation.y = odom.pose.pose.position.y;
+  ts.transform.translation.z = odom.pose.pose.position.z;
+
   ts.transform.rotation.x = q.x();
   ts.transform.rotation.y = q.y();
   ts.transform.rotation.z = q.z();
   ts.transform.rotation.w = q.w();
+
   tf_broadcaster_->sendTransform(ts);
 }
 
@@ -369,6 +400,42 @@ void XGO::pubBattery() {
   sensor_msgs::msg::BatteryState msg;
   msg.percentage = battery;
   battery_pub_->publish(msg);
+}
+
+void XGO::publishOdometry() {
+  current_time = this->get_clock()->now();
+
+  double dt = (current_time - last_time).seconds();
+  double delta_x = (vx * cos(imu_angle[2]) - vy * sin(imu_angle[2])) * dt;
+  double delta_y = (vx * sin(imu_angle[2]) + vy * cos(imu_angle[2])) * dt;
+
+  odom.header.stamp = current_time;
+  odom.header.frame_id = "odom";
+
+  // set the position
+  odom.pose.pose.position.x += delta_x;
+  odom.pose.pose.position.y += delta_y;
+  odom.pose.pose.position.z = 0.12;
+
+  tf2::Quaternion q;
+  q.setRPY(imu_angle[0], imu_angle[1], imu_angle[2]);
+  q.normalize();
+  
+  odom.pose.pose.orientation.x = q.x();
+  odom.pose.pose.orientation.y = q.y();
+  odom.pose.pose.orientation.z = q.z();
+  odom.pose.pose.orientation.w = q.w();
+
+  // set the velocity
+  odom.child_frame_id = "base_link";
+  odom.twist.twist.linear.x = vx;
+  odom.twist.twist.linear.y = vy;
+  odom.twist.twist.angular.z = vyaw;
+
+  // publish the message
+  odom_pub_->publish(odom);
+
+  last_time = current_time;
 }
 
 void XGO::parseStringParameter(const std::string &param_name,
