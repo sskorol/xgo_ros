@@ -1,0 +1,26 @@
+/**:
+  ros__parameters:
+    joints_map:
+      left_front:
+        - 13_Joint
+        - 12_Joint
+        - 11_Joint
+        - 10_Joint
+
+      right_front:
+        - 23_Joint
+        - 22_Joint
+        - 21_Joint
+        - 20_Joint
+
+      left_hind:
+        - 43_Joint
+        - 42_Joint
+        - 41_Joint
+        - 40_Joint
+
+      right_hind:
+        - 33_Joint
+        - 32_Joint
+        - 31_Joint
+        - 30_Joint

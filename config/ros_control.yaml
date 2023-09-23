@@ -1,0 +1,42 @@
+"":
+  joint_states_controller:
+      type: joint_state_controller/JointStateController
+      publish_rate: 50
+
+  joint_group_position_controller:
+      type: effort_controllers/JointTrajectoryController
+      joints:
+          - 13_Joint
+          - 12_Joint
+          - 11_Joint
+          - 10_Joint
+          - 23_Joint
+          - 22_Joint
+          - 21_Joint
+          - 20_Joint
+          - 43_Joint
+          - 42_Joint
+          - 41_Joint
+          - 40_Joint
+          - 33_Joint
+          - 32_Joint
+          - 31_Joint
+          - 30_Joint
+
+      gains:
+        13_Joint : {p: 100, d: 0.05, i: 25}
+        12_Joint : {p: 100, d: 0.05, i: 25}
+        11_Joint : {p: 100, d: 0.05, i: 25}
+        10_Joint : {p: 100, d: 0.05, i: 25}
+        23_Joint : {p: 100, d: 0.05, i: 25}
+        22_Joint : {p: 100, d: 0.05, i: 25}
+        21_Joint : {p: 100, d: 0.05, i: 25}
+        20_Joint : {p: 100, d: 0.05, i: 25}
+        43_Joint : {p: 100, d: 0.05, i: 25}
+        42_Joint : {p: 100, d: 0.05, i: 25}
+        41_Joint : {p: 100, d: 0.05, i: 25}
+        40_Joint : {p: 100, d: 0.05, i: 25}
+        33_Joint : {p: 100, d: 0.05, i: 25}
+        32_Joint : {p: 100, d: 0.05, i: 25}
+        31_Joint : {p: 100, d: 0.05, i: 25}
+        30_Joint : {p: 100, d: 0.05, i: 25}

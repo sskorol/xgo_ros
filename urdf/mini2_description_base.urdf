@@ -6,12 +6,18 @@
   name="mini2_description">
   <!-- Used for fixing robot to Gazebo 'body_link' -->
   <link name="base_footprint"/>
+  <link name="odom"/>
 
-  <joint name="base_fixed" type="fixed">
+  <joint name="base_to_odom" type="fixed">
     <origin
       xyz="0 0 0.1"
       rpy="0 0 0" />
     <parent link="base_footprint"/>
+    <child link="odom"/>
+  </joint>
+
+  <joint name="odom_to_base_link" type="fixed">
+    <parent link="odom"/>
     <child link="base_link"/>
   </joint>
 
@@ -106,7 +112,7 @@
     <child
       link="13_Link" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0  1" />
   </joint>
   <link
     name="12_Link">
@@ -159,7 +165,7 @@
     <child
       link="12_Link" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0  1" />
   </joint>
   <link
     name="11_Link">
@@ -212,7 +218,7 @@
     <child
       link="11_Link" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0  1" />
   </joint>
   <link
     name="10_Link">
