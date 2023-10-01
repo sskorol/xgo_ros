@@ -2,7 +2,7 @@
 
 This is the ROS2 Humble port of the [official ROS1 controller](https://www.yuque.com/luwudynamics/en/yhrwlm5mdu1trv3h) provided by the XGO team.
 
-![image](https://github.com/sskorol/xgo_ros/assets/6638780/077a9c87-10c8-4eba-9a1d-a33e22b15f1f)
+![image](https://github.com/sskorol/xgo_ros/assets/6638780/5b3d2315-8a3c-4c19-85e8-5fe14f2bc4da)
 
 ### Installation
 
