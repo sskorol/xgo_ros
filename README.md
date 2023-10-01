@@ -107,7 +107,7 @@ make && sudo make install
 
 Get sources:
 ```shell
-mkdir -p xgo_ws/src && cd xgo_ws/src && git clone -b humble https://github.com/sskorol/xgo-mini.git && cd ../
+mkdir -p xgo_ws/src && cd xgo_ws/src && git clone -b humble https://github.com/sskorol/xgo_ros.git && cd ../
 ```
 
 Ensure you've set up colcon and initialized rosdep:
