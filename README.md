@@ -1,11 +1,13 @@
 ## XGO Mini 2 - ROS Humble Controller
 
-This is the ROS2 Humble port of the [official ROS1 controller](https://www.yuque.com/luwudynamics/en/yhrwlm5mdu1trv3h) provided by XGO team.
+This is the ROS2 Humble port of the [official ROS1 controller](https://www.yuque.com/luwudynamics/en/yhrwlm5mdu1trv3h) provided by the XGO team.
+
+![image](https://github.com/sskorol/xgo_ros/assets/6638780/077a9c87-10c8-4eba-9a1d-a33e22b15f1f)
 
 ### Installation
 
 It's quite tricky with lots of hacks. A big ToDo is to automate and simplify this process. Note that some steps might be inaccurate at this point.
-So feel free to create PRs with fixes.
+So you can create PRs with fixes.
 
 #### Base image
 
@@ -30,7 +32,7 @@ Remove the section `console=serial0,115200`.
 
 #### Serial console
 
-To avoid serial conflicts, disable console:
+To avoid serial conflicts, disable the console:
 ```shell
 sudo systemctl stop serial-getty@ttyS0.service
 sudo systemctl disable serial-getty@ttyS0.service
@@ -65,9 +67,9 @@ Reboot the Raspberry Pi to ensure all changes are applied:
 sudo reboot
 ```
 
-After rebooting, you should be able to use `ttyAMA0` for serial communication and `ttyS0` for Bluetooth, without any permission issues.
-These steps are requried to make XGO accept serial commands and to control the robot via BT joystick.
-Note that assigning BT to `ttyS0`` makes it less stable. And sometimes you may see random disconnects.
+After rebooting, you should be able to use `ttyAMA0` for serial communication and `ttyS0` for Bluetooth without any permission issues.
+These steps are required to make XGO accept serial commands and control the robot via the BT joystick.
+Note that assigning BT to `ttyS0`` makes it less stable. And sometimes, you may see random disconnects.
 But it's better than sacrificing the main serial channel to the less stable port.
 
 ### Additional dependencies
@@ -81,17 +83,17 @@ sudo apt update && sudo apt install -y libjsoncpp-dev
 ### ROS2 Humble
 
 Follow the [official installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html) to set up Humble (base version).
-Or you can try some automated scripts like [this](https://github.com/Tiryoh/ros2_setup_scripts_ubuntu/blob/main/ros2-humble-ros-base-main.sh).
+Or you can try automated scripts like [this](https://github.com/Tiryoh/ros2_setup_scripts_ubuntu/blob/main/ros2-humble-ros-base-main.sh).
 
 ### Serial communication
 
-ROS2 doesn't support serial communication library used in lots of ROS1 controllers anymore. So you have to build its catkin-less port manually:
+ROS2 doesn't support the serial communication library used in lots of ROS1 controllers. So you have to build its catkin-less port manually:
 ```shell
 git clone https://github.com/wjwwood/cxx_serial.git && cd cxx_serial
 nano Makefile
 ```
 
-There's a hardcoded `CMAKE_INSTALL_PREFIX` that refers to `/tmp` dir. To avoid loosing the build output after reboot, you have to update a path:
+A hardcoded `CMAKE_INSTALL_PREFIX` refers to `/tmp` dir. To avoid losing the build output after reboot, you have to update a path:
 ```text
 CMAKE_FLAGS := -DCMAKE_INSTALL_PREFIX=/usr/local
 ```
@@ -139,22 +141,22 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 
 ### LD-X series LiDAR
 
-Note that the existing implementation supports LD-X LiDAR launch. So if you have one connected to the USB-C port, feel free to launch it via `use_lidar` flag.
-I found the following [driver](https://github.com/Myzhar/ldrobot-lidar-ros2) one of the most professional at this point. However, note that there's a know [bug](https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2/issues/4) in all the existing implementations. It appears when you try running slam-toolbox. Seems like there's already a [workaround](https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2/issues/4#issuecomment-1741854007) exists. Haven't tried it yet, though.
+Note that the existing implementation supports LD-X LiDAR launch. So, if you have one connected to the USB-C port, feel free to launch it via `use_lidar` flag.
+I found the following [driver](https://github.com/Myzhar/ldrobot-lidar-ros2) one of the most professional. However, there's a known [bug](https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2/issues/4) in all the existing implementations. It appears when you try running slam-toolbox. It seems like there's already a [workaround](https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2/issues/4#issuecomment-1741854007) exists. I haven't tried it yet, though.
 
 ### Known issues and ToDos
 
-- None of the existing teleop nodes allows you controlling an arm along with the body. So I created a separate node for that. Will be published soon. So stay tuned.
-- I also made adjustments to visualization part by migrating an existing messy URDF to Xacro format. It still requries some polishing though.
-- Integrate more serial commands like speed control, moving mode, etc. Note that some of them mentioned in the [official docs](https://www.yuque.com/luwudynamics/en/acdzm2yqrkml35m7) didn't work for me. Need to contact owners to get more details.
-- Investigate real limits of all the joints. Sometimes I can bring XGO to unrecoverable state. Velocity commands stop working. A robot just stuck at some pose.
-Note that it might be a partial "deadlock" (some joints might still work).
-- Investigate and reproduce system crash that prevents XGO from shutting down. SSH goes down, power button doesn't react on pressing. In this state we should only wait until the battery dies.
-- Find options for more stable power supply that prevents battery from draining when external power supply is connected in active development mode.
-Unfortunately, XGO can't work forever. And it make the whole development experience aweful.
-- IMU data doesn't provide Gyro readings. I'm still a little bit confused if it's hasn't been implemented yet, or a sensor doesn't support it. On the other hand, Z-readings always give me a constant error (a value is increasing with a constant speed). When I tried to visualize it in RViz, a robot was turning around its Z-axis. Not yet sure if it's a sensor issue or magnetic fields impact, or some other problem. Need to figure that out, as I can't fully reply on IMU data at this point.
-- Couldn't make slam-toolbox work due to a mentioned above LiDAR issue. Going to apply a given patch to see if it helps.
-- Still can't make it work with CHAMP. The biggest issue here is in the joint states. By default, this topic contains legs and arm data. However, CHAMP replies on legs only. It crashes. Already performed some experiments. But on luck yet. ToDo: publish gaits, joints, and links based on the XGO characteristics provided to me by its team. Would likely include these configs into a separate repo with visualization part which should be running on more powerful hardware than RPi.
-- Can't fully make XGO work in Gazebo yet due to the same reason as above. Seems like we need to split the arm and legs, and rely on MoveIt configs at the end. Not sure about the best control plugins for both cases though. Note about a great job done by [MiniPupper team](https://github.com/mangdangroboticsclub/mini_pupper_ros) to support ROS2 for their dog. So I use there code as inspiration in my experiments with XGO.
-- Figure out the correct way of publishing odometry data for quadrupted robots. Current implementation is just a workaround to build a full tf-tree required for the other steps on the way to SLAM/Nav.
+- None of the existing teleop nodes allow you to control an arm and body. So, I created a separate node for that. It will be published soon. So stay tuned.
+- I also adjusted the visualization by migrating a messy URDF to Xacro format. It still requires some polishing, though.
+- Integrate more serial commands like speed control, moving mode, etc. Some of them mentioned in the [official docs](https://www.yuque.com/luwudynamics/en/acdzm2yqrkml35m7) didn't work for me. I need to contact the owners to get more details.
+- Investigate the real limits of all the joints. Sometimes, I can bring XGO to an unrecoverable state. Velocity commands stop working. A robot just stuck in some pose.
+It might be a partial "deadlock" (some joints might still work).
+- Investigate and reproduce system crashes that prevent XGO from shutting down. SSH goes down, and the power button doesn't react on pressing. In this state, we should only wait until the battery dies.
+- Find options for a more stable power supply that prevents the battery from draining when the external power supply is connected in active development mode.
+Unfortunately, XGO can't work forever. And it makes the whole development experience awful.
+- IMU data doesn't provide Gyro readings. I'm still confused if it hasn't been implemented yet or if a sensor doesn't support it. On the other hand, Z-readings always give me a constant error (a value is increasing with a constant speed). When I tried to visualize it in RViz, a robot turned around its Z-axis. I'm unsure if it's a sensor issue, magnetic fields' impact, or some other problem. I need to figure that out, as I can't fully rely on IMU data.
+- Couldn't make slam-toolbox work due to a mentioned LiDAR issue. I'm going to apply a given patch to see if it helps.
+- I still can't make it work with CHAMP. The biggest issue here is in the joint states. By default, this topic contains legs and arm data. However, CHAMP replies on legs only. It crashes. I've already done some experiments. But on luck yet. ToDo: publish gaits, joints, and links based on the XGO characteristics provided to me by its team. I'd likely include these configs in a separate repo with the visualization part, which should run on more powerful hardware than RPi.
+- I can't fully make XGO work in Gazebo yet for the same reason. We must split the arm and legs and rely on MoveIt configs (probably) at the end. I'm unsure about the best control plugins for both cases. Note about a great job by [MiniPupper team](https://github.com/mangdangroboticsclub/mini_pupper_ros) to support ROS2 for their dog. So, I use their code as inspiration in my experiments with XGO.
+- Figure out the correct way of publishing odometry data for quadruped robots. The current implementation is just a workaround to build a full tf-tree required for the other steps to SLAM/Nav.
 - Polish the code.
